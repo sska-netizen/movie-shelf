@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>映画棚</title>
+
+<style>
+body {
+    margin: 0;
+    background: #111;
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+header {
+    padding: 20px;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.container {
+    padding: 0 20px;
+}
+
+.search {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.tabs button {
+    background: #333;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 20px;
+}
+
+.movie-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.movie {
+    background: #1e1e1e;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.poster {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    background: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+}
+
+.info {
+    padding: 10px;
+}
+
+.title {
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.status {
+    font-size: 13px;
+    color: #aaa;
+}
+
+.add {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    background: white;
+    color: black;
+    font-size: 30px;
+}
+</style>
+</head>
+
+<body>
+
+<header>🎬 映画棚</header>
+
+<div class="container">
+
+<input
+    class="search"
+    type="search"
+    placeholder="映画を検索"
+>
+
+<div class="tabs">
+    <button>すべて</button>
+    <button>未視聴</button>
+    <button>視聴済み</button>
+</div>
+
+<div class="movie-grid">
+
+    <div class="movie">
+        <div class="poster">🎬</div>
+        <div class="info">
+            <div class="title">インターステラー</div>
+            <div class="status">🔴 未視聴</div>
+        </div>
+    </div>
+
+    <div class="movie">
+        <div class="poster">🎬</div>
+        <div class="info">
+            <div class="title">セブン</div>
+            <div class="status">🟢 視聴済み</div>
+        </div>
+    </div>
+
+</div>
+
+</div>
+
+<button class="add">＋</button>
+
+</body>
+</html>
