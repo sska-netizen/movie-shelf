@@ -3,605 +3,396 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#171311">
 
 <title>Movie Shelf</title>
 
 <style>
-
-* {
-  box-sizing: border-box;
+*{
+  box-sizing:border-box;
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  margin: 0;
-  color: #f4eee8;
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "Helvetica Neue",
-    Arial,
-    sans-serif;
-
+body{
+  margin:0;
+  color:#f4eee8;
+  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
   background:
-    radial-gradient(
-      circle at 50% 0%,
-      rgba(255,255,255,.08),
-      transparent 35%
-    ),
-    linear-gradient(
-      90deg,
-      rgba(0,0,0,.25),
-      transparent 20%,
-      transparent 80%,
-      rgba(0,0,0,.25)
-    ),
+    radial-gradient(circle at 50% 0%,rgba(255,255,255,.08),transparent 35%),
+    linear-gradient(90deg,rgba(0,0,0,.25),transparent 20%,transparent 80%,rgba(0,0,0,.25)),
     #211a17;
 }
 
-/* HEADER */
-
-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-
-  background:
-    linear-gradient(
-      rgba(20,16,14,.97),
-      rgba(30,23,20,.97)
-    );
-
-  border-bottom: 1px solid rgba(255,255,255,.1);
-
-  box-shadow:
-    0 5px 20px rgba(0,0,0,.45);
+header{
+  position:sticky;
+  top:0;
+  z-index:100;
+  background:rgba(25,19,16,.97);
+  border-bottom:1px solid rgba(255,255,255,.1);
+  box-shadow:0 5px 20px rgba(0,0,0,.45);
 }
 
-.header-inner {
-  max-width: 900px;
-  margin: auto;
-
-  padding: 15px 16px;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.header-inner{
+  max-width:900px;
+  margin:auto;
+  padding:15px 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
 }
 
-h1 {
-  margin: 0;
-  font-size: 22px;
-  letter-spacing: .5px;
+h1{
+  margin:0;
+  font-size:22px;
 }
 
-.add-button {
-  background:
-    linear-gradient(
-      145deg,
-      #f1d6a5,
-      #b78a50
-    );
-
-  color: #241a12;
-  font-weight: 800;
-
-  padding: 10px 14px;
-  border-radius: 999px;
-
-  box-shadow:
-    0 4px 12px rgba(0,0,0,.35);
+button{
+  font:inherit;
+  border:0;
+  border-radius:10px;
+  padding:11px 15px;
+  cursor:pointer;
 }
 
-.container {
-  max-width: 900px;
-  margin: auto;
-  padding: 20px 14px 50px;
+.add-button,
+.primary,
+.load-more{
+  background:linear-gradient(145deg,#f1d6a5,#b78a50);
+  color:#241a12;
+  font-weight:800;
 }
 
-.section-title {
-  margin: 10px 0 14px;
-  font-size: 20px;
+.add-button{
+  border-radius:999px;
+  padding:10px 14px;
 }
 
-.section-title::before {
-  content: "🎬";
-  margin-right: 7px;
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:20px 14px 50px;
 }
 
-/* SEARCH */
-
-.search-box {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
+.search-box{
+  display:flex;
+  gap:8px;
+  margin-bottom:20px;
 }
 
-.search-box input {
-  flex: 1;
-  min-width: 0;
-
-  padding: 13px 14px;
-
-  color: #222;
-  background: #fff;
-
-  border: none;
-  border-radius: 10px;
-  outline: none;
+.search-box input{
+  flex:1;
+  min-width:0;
+  padding:13px 14px;
+  border:0;
+  border-radius:10px;
+  outline:none;
+  font-size:16px;
 }
 
-.search-box button {
-  background: #f0e1cc;
-  color: #251b16;
-
-  font-weight: 700;
-
-  border: none;
-  border-radius: 10px;
-
-  padding: 0 17px;
+.search-box button{
+  background:#f0e1cc;
+  color:#251b16;
+  font-weight:700;
 }
 
-/* SEARCH RESULTS */
-
-.result-item {
-  display: flex;
-  gap: 12px;
-
-  padding: 10px;
-  margin-bottom: 8px;
-
-  background:
-    linear-gradient(
-      145deg,
-      #fff,
-      #eee
-    );
-
-  color: #111;
-
-  border-radius: 12px;
-
-  cursor: pointer;
-
-  align-items: center;
-
-  box-shadow:
-    0 3px 12px rgba(0,0,0,.3);
+.result-item{
+  display:flex;
+  gap:12px;
+  padding:10px;
+  margin-bottom:8px;
+  background:linear-gradient(145deg,#fff,#eee);
+  color:#111;
+  border-radius:12px;
+  cursor:pointer;
+  align-items:center;
+  box-shadow:0 3px 12px rgba(0,0,0,.3);
 }
 
-.result-item img {
-  width: 55px;
-  height: 82px;
-
-  object-fit: cover;
-  border-radius: 5px;
-
-  background: #ddd;
+.result-item img{
+  width:55px;
+  height:82px;
+  object-fit:cover;
+  border-radius:5px;
+  background:#ddd;
 }
 
-.result-title {
-  font-weight: 800;
+.result-title{
+  font-weight:800;
 }
 
-.result-year {
-  color: #777;
-  font-size: 13px;
-  margin-top: 4px;
+.result-year{
+  color:#777;
+  font-size:13px;
+  margin-top:4px;
 }
 
-/* MOVIE WALL */
-
-.movie-grid {
-  display: grid;
-
-  grid-template-columns:
-    repeat(3, minmax(0, 1fr));
-
-  gap: 17px 10px;
-
-  padding:
-    18px 6px
-    35px;
+.section-title{
+  margin:20px 0 14px;
+  font-size:20px;
 }
 
-.movie-card {
-  position: relative;
+.movie-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:17px 10px;
+  padding:18px 6px 35px;
+}
 
-  background:
-    linear-gradient(
-      145deg,
-      #0d0b0a,
-      #332821
-    );
-
-  padding: 7px;
-
-  border-radius: 4px;
-
-  cursor: pointer;
-
+.movie-card{
+  background:linear-gradient(145deg,#0d0b0a,#332821);
+  padding:7px;
+  border-radius:4px;
+  cursor:pointer;
   box-shadow:
     0 10px 18px rgba(0,0,0,.55),
     inset 0 0 0 1px rgba(255,255,255,.08),
     inset 0 0 0 3px rgba(0,0,0,.7);
-
-  transition:
-    transform .18s,
-    box-shadow .18s;
 }
 
-.movie-card:active {
-  transform: scale(.97);
+.movie-card:active{
+  transform:scale(.97);
 }
 
-.movie-card img {
-  width: 100%;
-
-  aspect-ratio: 2 / 3;
-
-  object-fit: cover;
-
-  display: block;
-
-  background: #111;
-
-  border:
-    2px solid
-    rgba(214,174,112,.55);
-
-  box-shadow:
-    inset 0 0 15px rgba(0,0,0,.6);
+.movie-card img{
+  width:100%;
+  aspect-ratio:2/3;
+  object-fit:cover;
+  display:block;
+  background:#111;
+  border:2px solid rgba(214,174,112,.55);
 }
 
-.movie-info {
-  padding: 8px 3px 4px;
+.movie-info{
+  padding:8px 3px 4px;
 }
 
-.movie-title {
-  font-size: 13px;
-  font-weight: 800;
-  line-height: 1.35;
-
-  color: #f7eee4;
-
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.movie-title{
+  font-size:13px;
+  font-weight:800;
+  line-height:1.35;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 
-.movie-year {
-  color: #bcae9f;
-  font-size: 11px;
-  margin-top: 3px;
+.movie-year{
+  color:#bcae9f;
+  font-size:11px;
+  margin-top:3px;
 }
 
-.status {
-  display: inline-block;
-
-  margin-top: 6px;
-
-  padding: 3px 7px;
-
-  border-radius: 999px;
-
-  font-size: 10px;
-  font-weight: 700;
+.status{
+  display:inline-block;
+  margin-top:6px;
+  padding:3px 7px;
+  border-radius:999px;
+  font-size:10px;
+  font-weight:700;
 }
 
-.unwatched {
-  background: rgba(255,255,255,.12);
-  color: #d8cec4;
+.watched{
+  background:rgba(112,184,118,.22);
+  color:#a9e3ae;
 }
 
-.watched {
-  background: rgba(112,184,118,.22);
-  color: #a9e3ae;
+.unwatched{
+  background:rgba(255,255,255,.12);
+  color:#d8cec4;
 }
 
-/* NEXT PAGE */
-
-.load-more {
-  display: block;
-
-  width: 100%;
-
-  margin:
-    5px auto
-    25px;
-
-  padding: 13px;
-
-  background:
-    linear-gradient(
-      145deg,
-      #f1d6a5,
-      #b78a50
-    );
-
-  color: #241a12;
-
-  font-weight: 800;
-
-  border-radius: 10px;
+.load-more{
+  display:block;
+  width:100%;
+  margin:15px auto 25px;
 }
 
-.load-more:disabled {
-  opacity: .6;
+.load-more:disabled{
+  opacity:.6;
 }
 
-/* DETAIL */
-
-.detail {
-  background:
-    linear-gradient(
-      145deg,
-      #302621,
-      #171210
-    );
-
-  border-radius: 15px;
-  overflow: hidden;
-
-  box-shadow:
-    0 12px 35px rgba(0,0,0,.5);
+.detail{
+  background:linear-gradient(145deg,#302621,#171210);
+  border-radius:15px;
+  overflow:hidden;
+  box-shadow:0 12px 35px rgba(0,0,0,.5);
 }
 
-.detail-top {
-  display: grid;
-
-  grid-template-columns:
-    180px 1fr;
-
-  gap: 20px;
-
-  padding: 20px;
+.detail-top{
+  display:grid;
+  grid-template-columns:180px 1fr;
+  gap:20px;
+  padding:20px;
 }
 
-.detail-poster {
-  width: 100%;
-
-  border-radius: 5px;
-
-  border:
-    3px solid
-    #9c7445;
-
-  box-shadow:
-    0 8px 20px rgba(0,0,0,.6);
+.detail-poster{
+  width:100%;
+  border-radius:5px;
+  border:3px solid #9c7445;
 }
 
-.detail-title {
-  font-size: 27px;
-  font-weight: 900;
-
-  line-height: 1.2;
-
-  margin-bottom: 8px;
+.detail-title{
+  font-size:27px;
+  font-weight:900;
+  line-height:1.2;
+  margin-bottom:8px;
 }
 
-.detail-original {
-  color: #b8aaa0;
-  margin-bottom: 14px;
+.detail-original{
+  color:#b8aaa0;
+  margin-bottom:14px;
 }
 
-.detail-overview {
-  line-height: 1.75;
-  color: #e3d8cf;
+.detail-overview{
+  line-height:1.75;
+  color:#e3d8cf;
 }
 
-.detail-section {
-  border-top:
-    1px solid
-    rgba(255,255,255,.08);
-
-  padding: 18px 20px;
+.detail-section{
+  border-top:1px solid rgba(255,255,255,.08);
+  padding:18px 20px;
 }
 
-.detail-section h3 {
-  margin-top: 0;
-  color: #f1d6a5;
+.detail-section h3{
+  margin-top:0;
+  color:#f1d6a5;
 }
 
-.field {
-  margin-bottom: 17px;
+.field{
+  margin-bottom:17px;
 }
 
-.field label {
-  display: block;
-  font-weight: 700;
-  margin-bottom: 7px;
+.field label{
+  display:block;
+  font-weight:700;
+  margin-bottom:7px;
 }
 
 .field select,
-.field textarea {
-  width: 100%;
-
-  padding: 11px;
-
-  border: none;
-  border-radius: 9px;
-
-  background: #f5f5f5;
-  color: #222;
+.field textarea{
+  width:100%;
+  padding:11px;
+  border:0;
+  border-radius:9px;
+  background:#f5f5f5;
+  color:#222;
 }
 
-.field textarea {
-  min-height: 130px;
-  resize: vertical;
+.field textarea{
+  min-height:130px;
+  resize:vertical;
 }
 
-/* RATING */
-
-.rating {
-  font-size: 27px;
-  letter-spacing: 3px;
+.rating{
+  font-size:27px;
+  letter-spacing:3px;
 }
 
-.rating span {
-  color: #665e57;
-  cursor: pointer;
+.rating span{
+  color:#665e57;
+  cursor:pointer;
 }
 
-.rating span.active {
-  color: #e6ad4c;
-
-  text-shadow:
-    0 0 8px
-    rgba(230,173,76,.45);
+.rating span.active{
+  color:#e6ad4c;
 }
 
-/* BUTTONS */
-
-.actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+.actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
 }
 
-button {
-  font: inherit;
-  border: 0;
-  border-radius: 10px;
-  padding: 11px 15px;
-  cursor: pointer;
+.secondary{
+  background:rgba(255,255,255,.12);
+  color:#eee;
 }
 
-.primary {
-  background:
-    linear-gradient(
-      145deg,
-      #f1d6a5,
-      #b78a50
-    );
-
-  color: #241a12;
-  font-weight: 800;
+.danger{
+  background:#a83232;
+  color:white;
 }
 
-.secondary {
-  background:
-    rgba(255,255,255,.12);
-
-  color: #eee;
+.back{
+  margin-bottom:14px;
 }
 
-.danger {
-  background: #a83232;
-  color: white;
+.empty,
+.loading{
+  text-align:center;
+  padding:35px 10px;
+  color:#b9aca2;
 }
 
-.back {
-  margin-bottom: 14px;
+.error{
+  background:rgba(180,40,40,.2);
+  color:#ffb4b4;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:15px;
 }
 
-/* MISC */
-
-.empty {
-  text-align: center;
-  color: #b9aca2;
-  padding: 50px 10px;
+.tmdb-credit{
+  margin-top:30px;
+  font-size:11px;
+  color:#8e8279;
+  text-align:center;
 }
 
-.loading {
-  text-align: center;
-  padding: 20px;
-  color: #cfc2b7;
+.list-search{
+  width:100%;
+  padding:12px;
+  border:0;
+  border-radius:10px;
+  margin-bottom:10px;
 }
 
-.error {
-  background:
-    rgba(180,40,40,.2);
+@media(max-width:650px){
 
-  color: #ffb4b4;
-
-  padding: 12px;
-
-  border-radius: 10px;
-
-  margin-bottom: 15px;
-}
-
-.tmdb-credit {
-  margin-top: 30px;
-
-  font-size: 11px;
-
-  color: #8e8279;
-
-  text-align: center;
-}
-
-/* MOBILE */
-
-@media (max-width: 650px) {
-
-  .container {
-    padding:
-      15px 8px
-      45px;
+  .container{
+    padding:15px 8px 45px;
   }
 
-  .movie-grid {
-    grid-template-columns:
-      repeat(3, minmax(0, 1fr));
-
-    gap:
-      16px 7px;
-
-    padding:
-      14px 3px
-      30px;
+  .movie-grid{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:16px 7px;
+    padding:14px 3px 30px;
   }
 
-  .movie-card {
-    padding: 5px;
+  .movie-card{
+    padding:5px;
   }
 
-  .movie-title {
-    font-size: 11px;
+  .movie-title{
+    font-size:11px;
   }
 
-  .movie-year {
-    font-size: 10px;
+  .movie-year{
+    font-size:10px;
   }
 
-  .status {
-    font-size: 9px;
-    padding: 3px 5px;
+  .status{
+    font-size:9px;
+    padding:3px 5px;
   }
 
-  .detail-top {
-    grid-template-columns:
-      115px 1fr;
-
-    gap: 14px;
-
-    padding: 15px;
+  .detail-top{
+    grid-template-columns:115px 1fr;
+    gap:14px;
+    padding:15px;
   }
 
-  .detail-title {
-    font-size: 20px;
+  .detail-title{
+    font-size:20px;
   }
 
-  .detail-section {
-    padding: 15px;
+  .detail-section{
+    padding:15px;
   }
-
 }
-
 </style>
 </head>
 
 <body>
 
 <header>
-
   <div class="header-inner">
 
     <h1>🎬 Movie Shelf</h1>
@@ -614,7 +405,6 @@ button {
     </button>
 
   </div>
-
 </header>
 
 <main
@@ -628,35 +418,28 @@ const API_BASE =
   "https://movie-shelf-api.sska9927.workers.dev";
 
 const STORAGE_KEY =
-  "movieShelfV3";
+  "movieShelfV4";
 
-let movies =
-  loadMovies();
+let movies = loadMovies();
 
 let currentQuery = "";
 let currentPage = 1;
 let hasNextPage = false;
 let searching = false;
 
-function loadMovies() {
+function loadMovies(){
 
-  try {
-
+  try{
     return JSON.parse(
-      localStorage.getItem(
-        STORAGE_KEY
-      )
+      localStorage.getItem(STORAGE_KEY)
     ) || [];
-
-  } catch {
-
+  }catch{
     return [];
-
   }
 
 }
 
-function saveMovies() {
+function saveMovies(){
 
   localStorage.setItem(
     STORAGE_KEY,
@@ -665,42 +448,39 @@ function saveMovies() {
 
 }
 
-function escapeHTML(text) {
+function escapeHTML(text){
 
-  if (!text) return "";
+  if(!text) return "";
 
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+  return String(text)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
 
 }
 
-function poster(url) {
+function poster(url){
 
   return url ||
     "https://via.placeholder.com/500x750?text=No+Poster";
 
 }
 
-function year(date) {
+function year(date){
 
-  if (!date) return "";
-
-  return date.substring(0,4);
+  return date
+    ? date.substring(0,4)
+    : "";
 
 }
 
 /* HOME */
 
-function showHome() {
+function showHome(){
 
-  const app =
-    document.getElementById("app");
-
-  app.innerHTML = `
+  document.getElementById("app").innerHTML = `
 
     <div id="searchArea">
 
@@ -723,9 +503,7 @@ function showHome() {
 
       </div>
 
-      <div
-        id="searchResults"
-      ></div>
+      <div id="searchResults"></div>
 
     </div>
 
@@ -735,85 +513,64 @@ function showHome() {
 
     <input
       id="listSearch"
+      class="list-search"
       placeholder="登録作品を検索"
       oninput="renderMovieList()"
-      style="
-        width:100%;
-        padding:12px;
-        border:0;
-        border-radius:10px;
-        margin-bottom:15px;
-      "
     >
 
-    <div
-      id="movieList"
-    ></div>
+    <div id="movieList"></div>
 
     <div class="tmdb-credit">
       Movie data provided by TMDB.
     </div>
-
   `;
 
   renderMovieList();
 
 }
 
-/* ADD BUTTON */
+function focusSearch(){
 
-function focusSearch() {
-
-  if (
-    !document.getElementById(
-      "movieSearch"
-    )
-  ) {
+  if(!document.getElementById("movieSearch")){
     showHome();
   }
 
-  setTimeout(() => {
+  setTimeout(()=>{
 
     const input =
-      document.getElementById(
-        "movieSearch"
-      );
+      document.getElementById("movieSearch");
 
-    if (!input) return;
+    if(!input) return;
 
     input.focus();
 
     input.scrollIntoView({
-      behavior: "smooth",
-      block: "center"
+      behavior:"smooth",
+      block:"center"
     });
 
-  }, 100);
+  },100);
 
 }
 
 /* SEARCH */
 
-async function searchMovie() {
+async function searchMovie(){
 
   const input =
-    document.getElementById(
-      "movieSearch"
-    );
+    document.getElementById("movieSearch");
 
   const query =
     input.value.trim();
 
-  if (!query) return;
+  if(!query) return;
 
   currentQuery = query;
   currentPage = 1;
   hasNextPage = false;
 
   const results =
-    document.getElementById(
-      "searchResults"
-    );
+    document.getElementById("searchResults");
 
   results.innerHTML =
     `<div class="loading">
@@ -828,24 +585,22 @@ async function searchMovie() {
 
 }
 
-/* LOAD SEARCH PAGE */
+/* SEARCH PAGE */
 
 async function loadSearchPage(
   query,
   page,
   append
-) {
+){
 
-  if (searching) return;
+  if(searching) return;
 
   searching = true;
 
   const results =
-    document.getElementById(
-      "searchResults"
-    );
+    document.getElementById("searchResults");
 
-  try {
+  try{
 
     const response =
       await fetch(
@@ -856,25 +611,17 @@ async function loadSearchPage(
         page
       );
 
-    if (!response.ok) {
+    if(!response.ok){
       throw new Error(
-        "API error"
+        "API error " +
+        response.status
       );
     }
 
     const data =
       await response.json();
 
-    /*
-      新しいWorker形式
-      {
-        results: [],
-        page: 1,
-        hasNextPage: true
-      }
-    */
-
-    const moviesFound =
+    const found =
       Array.isArray(data.results)
         ? data.results
         : [];
@@ -883,56 +630,51 @@ async function loadSearchPage(
       data.page || page;
 
     hasNextPage =
-      Boolean(
-        data.hasNextPage
-      );
+      Boolean(data.hasNextPage);
 
-    if (
-      moviesFound.length === 0 &&
+    if(
+      found.length === 0 &&
       !append
-    ) {
+    ){
 
       results.innerHTML =
         `<div class="empty">
-          映画が見つかりませんでした。
+          「${escapeHTML(query)}」に
+          該当する映画がありませんでした。
         </div>`;
 
       searching = false;
-
       return;
     }
 
     const html =
-      moviesFound
-        .map(movie => `
+      found.map(movie => {
+
+        const safeMovie =
+          encodeURIComponent(
+            JSON.stringify(movie)
+          );
+
+        return `
 
           <div
             class="result-item"
-            onclick='confirmAdd(
-              ${JSON.stringify(movie)
-                .replace(/'/g,"&#39;")}
-            )'
+            onclick="confirmAddEncoded('${safeMovie}')"
           >
 
             <img
-              src="${poster(
-                movie.posterPath
-              )}"
+              src="${poster(movie.posterPath)}"
             >
 
             <div>
 
               <div class="result-title">
-                ${escapeHTML(
-                  movie.title
-                )}
+                ${escapeHTML(movie.title)}
               </div>
 
               <div class="result-year">
 
-                ${year(
-                  movie.releaseDate
-                )}
+                ${year(movie.releaseDate)}
 
                 ${
                   movie.originalTitle
@@ -949,63 +691,71 @@ async function loadSearchPage(
 
           </div>
 
-        `)
-        .join("");
+        `;
 
-    if (append) {
+      }).join("");
 
-      const oldMore =
-        document.getElementById(
-          "loadMoreButton"
-        );
-
-      if (oldMore) {
-        oldMore.remove();
-      }
-
-      results.insertAdjacentHTML(
-        "beforeend",
-        html
-      );
-
-    } else {
+    if(!append){
 
       results.innerHTML = `
-        <h3>
-          検索結果
-        </h3>
+        <h3>検索結果</h3>
 
         <div id="searchMovieResults">
           ${html}
         </div>
       `;
 
+    }else{
+
+      const list =
+        document.getElementById(
+          "searchMovieResults"
+        );
+
+      if(list){
+        list.insertAdjacentHTML(
+          "beforeend",
+          html
+        );
+      }
+
     }
 
-    if (hasNextPage) {
+    const oldButton =
+      document.getElementById(
+        "loadMoreButton"
+      );
+
+    if(oldButton){
+      oldButton.remove();
+    }
+
+    if(hasNextPage){
 
       results.insertAdjacentHTML(
         "beforeend",
 
         `
-          <button
-            id="loadMoreButton"
-            class="load-more"
-            onclick="loadNextPage()"
-          >
-            次の20作品を表示
-          </button>
+        <button
+          id="loadMoreButton"
+          class="load-more"
+          onclick="loadNextPage()"
+        >
+          次の20作品を表示
+        </button>
         `
       );
 
     }
 
-  } catch (error) {
+  }catch(error){
+
+    console.error(error);
 
     results.innerHTML = `
       <div class="error">
-        映画情報の取得に失敗しました。<br>
-        もう一度試してください。
+        検索に失敗しました。<br>
+        もう一度検索してください。
       </div>
     `;
 
@@ -1017,16 +767,14 @@ async function loadSearchPage(
 
 /* NEXT 20 */
 
-async function loadNextPage() {
-
-  if (!currentQuery) return;
+async function loadNextPage(){
 
   const button =
     document.getElementById(
       "loadMoreButton"
     );
 
-  if (button) {
+  if(button){
 
     button.disabled = true;
 
@@ -1045,15 +793,37 @@ async function loadNextPage() {
 
 /* ADD */
 
-function confirmAdd(movie) {
+function confirmAddEncoded(encoded){
+
+  try{
+
+    const movie =
+      JSON.parse(
+        decodeURIComponent(encoded)
+      );
+
+    confirmAdd(movie);
+
+  }catch(error){
+
+    console.error(error);
+
+    alert(
+      "作品情報の読み込みに失敗しました。"
+    );
+
+  }
+
+}
+
+function confirmAdd(movie){
 
   const duplicate =
     movies.find(
-      m =>
-        m.tmdbId === movie.id
+      m => m.tmdbId === movie.id
     );
 
-  if (duplicate) {
+  if(duplicate){
 
     const answer =
       confirm(
@@ -1063,7 +833,7 @@ function confirmAdd(movie) {
         "それでも追加しますか？"
       );
 
-    if (!answer) return;
+    if(!answer) return;
 
   }
 
@@ -1071,9 +841,9 @@ function confirmAdd(movie) {
 
 }
 
-function addMovie(movie) {
+function addMovie(movie){
 
-  const newMovie = {
+  movies.push({
 
     localId:
       Date.now().toString(),
@@ -1096,29 +866,22 @@ function addMovie(movie) {
     posterPath:
       movie.posterPath || "",
 
-    watched:
-      false,
+    watched:false,
 
-    rating:
-      0,
+    rating:0,
 
-    note:
-      "",
+    note:"",
 
     createdAt:
       new Date().toISOString()
 
-  };
-
-  movies.push(
-    newMovie
-  );
+  });
 
   saveMovies();
 
   alert(
     "「" +
-    newMovie.title +
+    movie.title +
     "」を映画棚に追加しました！"
   );
 
@@ -1126,16 +889,16 @@ function addMovie(movie) {
 
 }
 
-/* MOVIE LIST */
+/* LIST */
 
-function renderMovieList() {
+function renderMovieList(){
 
   const list =
     document.getElementById(
       "movieList"
     );
 
-  if (!list) return;
+  if(!list) return;
 
   const search =
     (
@@ -1145,19 +908,16 @@ function renderMovieList() {
     ).toLowerCase();
 
   const filtered =
-    movies.filter(
-      movie =>
-        movie.title
-          .toLowerCase()
-          .includes(search) ||
-        movie.originalTitle
-          .toLowerCase()
-          .includes(search)
+    movies.filter(movie =>
+      movie.title
+        .toLowerCase()
+        .includes(search) ||
+      movie.originalTitle
+        .toLowerCase()
+        .includes(search)
     );
 
-  if (
-    filtered.length === 0
-  ) {
+  if(filtered.length === 0){
 
     list.innerHTML =
       `<div class="empty">
@@ -1169,97 +929,75 @@ function renderMovieList() {
       </div>`;
 
     return;
-
   }
 
   list.innerHTML = `
 
     <div class="movie-grid">
 
-      ${filtered
-        .map(movie => `
+      ${filtered.map(movie => `
 
-          <div
-            class="movie-card"
-            onclick="
-              showDetail(
-                '${movie.localId}'
-              )
-            "
+        <div
+          class="movie-card"
+          onclick="
+            showDetail('${movie.localId}')
+          "
+        >
+
+          <img
+            src="${poster(movie.posterPath)}"
           >
 
-            <img
-              src="${poster(
-                movie.posterPath
-              )}"
-              alt="${escapeHTML(
-                movie.title
-              )}"
-            >
+          <div class="movie-info">
 
-            <div class="movie-info">
-
-              <div class="movie-title">
-                ${escapeHTML(
-                  movie.title
-                )}
-              </div>
-
-              <div class="movie-year">
-                ${year(
-                  movie.releaseDate
-                )}
-              </div>
-
-              <span
-                class="status ${
-                  movie.watched
-                    ? "watched"
-                    : "unwatched"
-                }"
-              >
-
-                ${
-                  movie.watched
-                    ? "✓ 視聴済み"
-                    : "未視聴"
-                }
-
-              </span>
-
+            <div class="movie-title">
+              ${escapeHTML(movie.title)}
             </div>
+
+            <div class="movie-year">
+              ${year(movie.releaseDate)}
+            </div>
+
+            <span
+              class="status ${
+                movie.watched
+                  ? "watched"
+                  : "unwatched"
+              }"
+            >
+              ${
+                movie.watched
+                  ? "✓ 視聴済み"
+                  : "未視聴"
+              }
+            </span>
 
           </div>
 
-        `)
-        .join("")}
+        </div>
+
+      `).join("")}
 
     </div>
-
   `;
 
 }
 
 /* DETAIL */
 
-function showDetail(
-  localId
-) {
+function showDetail(localId){
 
   const movie =
     movies.find(
-      m =>
-        m.localId === localId
+      m => m.localId === localId
     );
 
-  if (!movie) return;
+  if(!movie) return;
 
-  const app =
-    document.getElementById(
-      "app"
-    );
+  window.currentMovieId =
+    localId;
 
-  app.innerHTML = `
+  document.getElementById("app").innerHTML = `
 
     <button
       class="secondary back"
@@ -1274,32 +1012,24 @@ function showDetail(
 
         <img
           class="detail-poster"
-          src="${poster(
-            movie.posterPath
-          )}"
+          src="${poster(movie.posterPath)}"
         >
 
         <div>
 
           <div class="detail-title">
-            ${escapeHTML(
-              movie.title
-            )}
+            ${escapeHTML(movie.title)}
           </div>
 
           <div class="detail-original">
-            ${escapeHTML(
-              movie.originalTitle
-            )}
+            ${escapeHTML(movie.originalTitle)}
           </div>
 
           <div>
             ${
               movie.releaseDate
                 ? "公開日：" +
-                  escapeHTML(
-                    movie.releaseDate
-                  )
+                  escapeHTML(movie.releaseDate)
                 : ""
             }
           </div>
@@ -1310,58 +1040,38 @@ function showDetail(
 
       <div class="detail-section">
 
-        <h3>
-          あらすじ
-        </h3>
+        <h3>あらすじ</h3>
 
         <div class="detail-overview">
-
           ${
             movie.overview
-              ? escapeHTML(
-                  movie.overview
-                )
+              ? escapeHTML(movie.overview)
               : "あらすじ情報なし"
           }
-
         </div>
 
       </div>
 
       <div class="detail-section">
 
-        <h3>
-          自分の記録
-        </h3>
+        <h3>自分の記録</h3>
 
         <div class="field">
 
-          <label>
-            視聴状況
-          </label>
+          <label>視聴状況</label>
 
-          <select
-            id="watchedSelect"
-          >
+          <select id="watchedSelect">
 
             <option
               value="false"
-              ${
-                !movie.watched
-                  ? "selected"
-                  : ""
-              }
+              ${!movie.watched ? "selected" : ""}
             >
               未視聴
             </option>
 
             <option
               value="true"
-              ${
-                movie.watched
-                  ? "selected"
-                  : ""
-              }
+              ${movie.watched ? "selected" : ""}
             >
               視聴済み
             </option>
@@ -1372,33 +1082,20 @@ function showDetail(
 
         <div class="field">
 
-          <label>
-            評価
-          </label>
+          <label>評価</label>
 
-          <div
-            id="rating"
-            class="rating"
-          >
+          <div id="rating" class="rating">
 
-            ${[1,2,3,4,5]
-              .map(n => `
+            ${[1,2,3,4,5].map(n => `
 
-                <span
-                  class="${
-                    n <= movie.rating
-                      ? "active"
-                      : ""
-                  }"
-                  onclick="
-                    setRating(${n})
-                  "
-                >
-                  ★
-                </span>
+              <span
+                class="${n <= movie.rating ? "active" : ""}"
+                onclick="setRating(${n})"
+              >
+                ★
+              </span>
 
-              `)
-              .join("")}
+            `).join("")}
 
           </div>
 
@@ -1406,16 +1103,12 @@ function showDetail(
 
         <div class="field">
 
-          <label>
-            メモ・感想
-          </label>
+          <label>メモ・感想</label>
 
           <textarea
             id="movieNote"
             placeholder="映画を観た感想などを入力"
-          >${escapeHTML(
-            movie.note
-          )}</textarea>
+          >${escapeHTML(movie.note)}</textarea>
 
         </div>
 
@@ -1424,9 +1117,7 @@ function showDetail(
           <button
             class="primary"
             onclick="
-              saveDetail(
-                '${movie.localId}'
-              )
+              saveDetail('${movie.localId}')
             "
           >
             保存
@@ -1435,9 +1126,7 @@ function showDetail(
           <button
             class="danger"
             onclick="
-              deleteMovie(
-                '${movie.localId}'
-              )
+              deleteMovie('${movie.localId}')
             "
           >
             この作品を削除
@@ -1448,23 +1137,13 @@ function showDetail(
       </div>
 
     </div>
-
-    <div class="tmdb-credit">
-      Movie data provided by TMDB.
-    </div>
-
   `;
-
-  window.currentMovieId =
-    localId;
 
 }
 
 /* RATING */
 
-function setRating(
-  value
-) {
+function setRating(value){
 
   const movie =
     movies.find(
@@ -1473,10 +1152,9 @@ function setRating(
         window.currentMovieId
     );
 
-  if (!movie) return;
+  if(!movie) return;
 
-  movie.rating =
-    value;
+  movie.rating = value;
 
   const rating =
     document.getElementById(
@@ -1484,41 +1162,29 @@ function setRating(
     );
 
   rating.innerHTML =
-    [1,2,3,4,5]
-      .map(n => `
+    [1,2,3,4,5].map(n => `
 
-        <span
-          class="${
-            n <= value
-              ? "active"
-              : ""
-          }"
-          onclick="
-            setRating(${n})
-          "
-        >
-          ★
-        </span>
+      <span
+        class="${n <= value ? "active" : ""}"
+        onclick="setRating(${n})"
+      >
+        ★
+      </span>
 
-      `)
-      .join("");
+    `).join("");
 
 }
 
 /* SAVE */
 
-function saveDetail(
-  localId
-) {
+function saveDetail(localId){
 
   const movie =
     movies.find(
-      m =>
-        m.localId ===
-        localId
+      m => m.localId === localId
     );
 
-  if (!movie) return;
+  if(!movie) return;
 
   movie.watched =
     document.getElementById(
@@ -1532,30 +1198,22 @@ function saveDetail(
 
   saveMovies();
 
-  alert(
-    "保存しました！"
-  );
+  alert("保存しました！");
 
-  showDetail(
-    localId
-  );
+  showDetail(localId);
 
 }
 
 /* DELETE */
 
-function deleteMovie(
-  localId
-) {
+function deleteMovie(localId){
 
   const movie =
     movies.find(
-      m =>
-        m.localId ===
-        localId
+      m => m.localId === localId
     );
 
-  if (!movie) return;
+  if(!movie) return;
 
   const answer =
     confirm(
@@ -1565,13 +1223,11 @@ function deleteMovie(
       "この操作は取り消せません。"
     );
 
-  if (!answer) return;
+  if(!answer) return;
 
   movies =
     movies.filter(
-      m =>
-        m.localId !==
-        localId
+      m => m.localId !== localId
     );
 
   saveMovies();
