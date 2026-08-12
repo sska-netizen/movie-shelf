@@ -1,230 +1,1590 @@
-export default {
-  async fetch(request, env) {
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#171311">
 
-    const corsHeaders = {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type"
-    };
+<title>Movie Shelf</title>
 
-    if (request.method === "OPTIONS") {
-      return new Response(null, {
-        headers: corsHeaders
-      });
-    }
+<style>
 
-    const url = new URL(request.url);
+* {
+  box-sizing: border-box;
+}
 
-    if (url.pathname !== "/search") {
-      return new Response(
-        JSON.stringify({
-          message: "Movie Shelf API is working!"
-        }),
-        {
-          headers: {
-            "Content-Type": "application/json",
-            ...corsHeaders
-          }
-        }
-      );
-    }
+html {
+  scroll-behavior: smooth;
+}
 
-    const query = url.searchParams.get("q");
-    const page = Math.max(
-      1,
-      parseInt(url.searchParams.get("page") || "1", 10)
+body {
+  margin: 0;
+  color: #f4eee8;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(255,255,255,.08),
+      transparent 35%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(0,0,0,.25),
+      transparent 20%,
+      transparent 80%,
+      rgba(0,0,0,.25)
+    ),
+    #211a17;
+}
+
+/* HEADER */
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  background:
+    linear-gradient(
+      rgba(20,16,14,.97),
+      rgba(30,23,20,.97)
     );
 
-    if (!query) {
-      return new Response(
-        JSON.stringify({
-          error: "検索ワードがありません"
-        }),
-        {
-          status: 400,
-          headers: {
-            "Content-Type": "application/json",
-            ...corsHeaders
-          }
-        }
-      );
-    }
+  border-bottom: 1px solid rgba(255,255,255,.1);
 
-    /*
-      検索文字の揺れを軽減
-      トイ・ストーリー
-      トイ ストーリー
-      トイ　ストーリー
-      ↓
-      トイストーリー
-    */
-    const normalizedQuery = query
-      .normalize("NFKC")
-      .replace(/[\s・･·•]/g, "")
-      .trim();
+  box-shadow:
+    0 5px 20px rgba(0,0,0,.45);
+}
 
-    /*
-      TMDBから検索する関数
-    */
-    async function searchTMDB(searchQuery, searchPage) {
+.header-inner {
+  max-width: 900px;
+  margin: auto;
 
-      const tmdbUrl =
-        "https://api.themoviedb.org/3/search/movie" +
-        "?api_key=" +
-        encodeURIComponent(env.TMDB_API_KEY) +
-        "&query=" +
-        encodeURIComponent(searchQuery) +
-        "&language=ja-JP" +
-        "&region=JP" +
-        "&include_adult=false" +
-        "&page=" +
-        searchPage;
+  padding: 15px 16px;
 
-      const response =
-        await fetch(tmdbUrl);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
-      if (!response.ok) {
-        throw new Error(
-          "TMDB error: " + response.status
-        );
-      }
+h1 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: .5px;
+}
 
-      return await response.json();
-    }
+.add-button {
+  background:
+    linear-gradient(
+      145deg,
+      #f1d6a5,
+      #b78a50
+    );
 
-    try {
+  color: #241a12;
+  font-weight: 800;
 
-      /*
-        通常検索
-      */
-      const data =
-        await searchTMDB(query, page);
+  padding: 10px 14px;
+  border-radius: 999px;
 
-      /*
-        検索文字を正規化した検索も実行
-      */
-      let normalizedData = {
-        results: [],
-        total_pages: 0,
-        total_results: 0
-      };
+  box-shadow:
+    0 4px 12px rgba(0,0,0,.35);
+}
 
-      if (
-        normalizedQuery &&
-        normalizedQuery !== query
-      ) {
-        normalizedData =
-          await searchTMDB(
-            normalizedQuery,
-            page
-          );
-      }
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px 14px 50px;
+}
 
-      /*
-        2つの検索結果を統合
-        同じTMDB IDは1つにする
-      */
-      const combined = [
-        ...(data.results || []),
-        ...(normalizedData.results || [])
-      ];
+.section-title {
+  margin: 10px 0 14px;
+  font-size: 20px;
+}
 
-      const uniqueMovies = [];
-      const seen = new Set();
+.section-title::before {
+  content: "🎬";
+  margin-right: 7px;
+}
 
-      for (const movie of combined) {
+/* SEARCH */
 
-        if (seen.has(movie.id)) {
-          continue;
-        }
+.search-box {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
 
-        seen.add(movie.id);
+.search-box input {
+  flex: 1;
+  min-width: 0;
 
-        uniqueMovies.push({
-          id: movie.id,
+  padding: 13px 14px;
 
-          title:
-            movie.title || "",
+  color: #222;
+  background: #fff;
 
-          originalTitle:
-            movie.original_title || "",
+  border: none;
+  border-radius: 10px;
+  outline: none;
+}
 
-          releaseDate:
-            movie.release_date || "",
+.search-box button {
+  background: #f0e1cc;
+  color: #251b16;
 
-          overview:
-            movie.overview || "",
+  font-weight: 700;
 
-          posterPath:
-            movie.poster_path
-              ? "https://image.tmdb.org/t/p/w500" +
-                movie.poster_path
-              : null
-        });
-      }
+  border: none;
+  border-radius: 10px;
 
-      /*
-        検索結果
-        20件まで返す
-      */
-      const movies =
-        uniqueMovies.slice(0, 20);
+  padding: 0 17px;
+}
 
-      /*
-        次ページがあるか
-      */
-      const hasNextPage =
-        page < Math.max(
-          data.total_pages || 0,
-          normalizedData.total_pages || 0
-        );
+/* SEARCH RESULTS */
 
-      return new Response(
-        JSON.stringify({
+.result-item {
+  display: flex;
+  gap: 12px;
 
-          results: movies,
+  padding: 10px;
+  margin-bottom: 8px;
 
-          page: page,
+  background:
+    linear-gradient(
+      145deg,
+      #fff,
+      #eee
+    );
 
-          hasNextPage: hasNextPage,
+  color: #111;
 
-          totalResults:
-            Math.max(
-              data.total_results || 0,
-              normalizedData.total_results || 0
-            )
+  border-radius: 12px;
 
-        }),
-        {
-          headers: {
-            "Content-Type":
-              "application/json; charset=UTF-8",
+  cursor: pointer;
 
-            ...corsHeaders
-          }
-        }
-      );
+  align-items: center;
 
-    } catch (error) {
+  box-shadow:
+    0 3px 12px rgba(0,0,0,.3);
+}
 
-      return new Response(
-        JSON.stringify({
-          error:
-            "TMDB検索に失敗しました",
-          detail:
-            error.message
-        }),
-        {
-          status: 500,
+.result-item img {
+  width: 55px;
+  height: 82px;
 
-          headers: {
-            "Content-Type":
-              "application/json",
+  object-fit: cover;
+  border-radius: 5px;
 
-            ...corsHeaders
-          }
-        }
-      );
-    }
+  background: #ddd;
+}
+
+.result-title {
+  font-weight: 800;
+}
+
+.result-year {
+  color: #777;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* MOVIE WALL */
+
+.movie-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 17px 10px;
+
+  padding:
+    18px 6px
+    35px;
+}
+
+.movie-card {
+  position: relative;
+
+  background:
+    linear-gradient(
+      145deg,
+      #0d0b0a,
+      #332821
+    );
+
+  padding: 7px;
+
+  border-radius: 4px;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 10px 18px rgba(0,0,0,.55),
+    inset 0 0 0 1px rgba(255,255,255,.08),
+    inset 0 0 0 3px rgba(0,0,0,.7);
+
+  transition:
+    transform .18s,
+    box-shadow .18s;
+}
+
+.movie-card:active {
+  transform: scale(.97);
+}
+
+.movie-card img {
+  width: 100%;
+
+  aspect-ratio: 2 / 3;
+
+  object-fit: cover;
+
+  display: block;
+
+  background: #111;
+
+  border:
+    2px solid
+    rgba(214,174,112,.55);
+
+  box-shadow:
+    inset 0 0 15px rgba(0,0,0,.6);
+}
+
+.movie-info {
+  padding: 8px 3px 4px;
+}
+
+.movie-title {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.35;
+
+  color: #f7eee4;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.movie-year {
+  color: #bcae9f;
+  font-size: 11px;
+  margin-top: 3px;
+}
+
+.status {
+  display: inline-block;
+
+  margin-top: 6px;
+
+  padding: 3px 7px;
+
+  border-radius: 999px;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.unwatched {
+  background: rgba(255,255,255,.12);
+  color: #d8cec4;
+}
+
+.watched {
+  background: rgba(112,184,118,.22);
+  color: #a9e3ae;
+}
+
+/* NEXT PAGE */
+
+.load-more {
+  display: block;
+
+  width: 100%;
+
+  margin:
+    5px auto
+    25px;
+
+  padding: 13px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #f1d6a5,
+      #b78a50
+    );
+
+  color: #241a12;
+
+  font-weight: 800;
+
+  border-radius: 10px;
+}
+
+.load-more:disabled {
+  opacity: .6;
+}
+
+/* DETAIL */
+
+.detail {
+  background:
+    linear-gradient(
+      145deg,
+      #302621,
+      #171210
+    );
+
+  border-radius: 15px;
+  overflow: hidden;
+
+  box-shadow:
+    0 12px 35px rgba(0,0,0,.5);
+}
+
+.detail-top {
+  display: grid;
+
+  grid-template-columns:
+    180px 1fr;
+
+  gap: 20px;
+
+  padding: 20px;
+}
+
+.detail-poster {
+  width: 100%;
+
+  border-radius: 5px;
+
+  border:
+    3px solid
+    #9c7445;
+
+  box-shadow:
+    0 8px 20px rgba(0,0,0,.6);
+}
+
+.detail-title {
+  font-size: 27px;
+  font-weight: 900;
+
+  line-height: 1.2;
+
+  margin-bottom: 8px;
+}
+
+.detail-original {
+  color: #b8aaa0;
+  margin-bottom: 14px;
+}
+
+.detail-overview {
+  line-height: 1.75;
+  color: #e3d8cf;
+}
+
+.detail-section {
+  border-top:
+    1px solid
+    rgba(255,255,255,.08);
+
+  padding: 18px 20px;
+}
+
+.detail-section h3 {
+  margin-top: 0;
+  color: #f1d6a5;
+}
+
+.field {
+  margin-bottom: 17px;
+}
+
+.field label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 7px;
+}
+
+.field select,
+.field textarea {
+  width: 100%;
+
+  padding: 11px;
+
+  border: none;
+  border-radius: 9px;
+
+  background: #f5f5f5;
+  color: #222;
+}
+
+.field textarea {
+  min-height: 130px;
+  resize: vertical;
+}
+
+/* RATING */
+
+.rating {
+  font-size: 27px;
+  letter-spacing: 3px;
+}
+
+.rating span {
+  color: #665e57;
+  cursor: pointer;
+}
+
+.rating span.active {
+  color: #e6ad4c;
+
+  text-shadow:
+    0 0 8px
+    rgba(230,173,76,.45);
+}
+
+/* BUTTONS */
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+button {
+  font: inherit;
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 15px;
+  cursor: pointer;
+}
+
+.primary {
+  background:
+    linear-gradient(
+      145deg,
+      #f1d6a5,
+      #b78a50
+    );
+
+  color: #241a12;
+  font-weight: 800;
+}
+
+.secondary {
+  background:
+    rgba(255,255,255,.12);
+
+  color: #eee;
+}
+
+.danger {
+  background: #a83232;
+  color: white;
+}
+
+.back {
+  margin-bottom: 14px;
+}
+
+/* MISC */
+
+.empty {
+  text-align: center;
+  color: #b9aca2;
+  padding: 50px 10px;
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #cfc2b7;
+}
+
+.error {
+  background:
+    rgba(180,40,40,.2);
+
+  color: #ffb4b4;
+
+  padding: 12px;
+
+  border-radius: 10px;
+
+  margin-bottom: 15px;
+}
+
+.tmdb-credit {
+  margin-top: 30px;
+
+  font-size: 11px;
+
+  color: #8e8279;
+
+  text-align: center;
+}
+
+/* MOBILE */
+
+@media (max-width: 650px) {
+
+  .container {
+    padding:
+      15px 8px
+      45px;
   }
-};
+
+  .movie-grid {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+
+    gap:
+      16px 7px;
+
+    padding:
+      14px 3px
+      30px;
+  }
+
+  .movie-card {
+    padding: 5px;
+  }
+
+  .movie-title {
+    font-size: 11px;
+  }
+
+  .movie-year {
+    font-size: 10px;
+  }
+
+  .status {
+    font-size: 9px;
+    padding: 3px 5px;
+  }
+
+  .detail-top {
+    grid-template-columns:
+      115px 1fr;
+
+    gap: 14px;
+
+    padding: 15px;
+  }
+
+  .detail-title {
+    font-size: 20px;
+  }
+
+  .detail-section {
+    padding: 15px;
+  }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+
+  <div class="header-inner">
+
+    <h1>🎬 Movie Shelf</h1>
+
+    <button
+      class="add-button"
+      onclick="focusSearch()"
+    >
+      ＋ 追加
+    </button>
+
+  </div>
+
+</header>
+
+<main
+  class="container"
+  id="app"
+></main>
+
+<script>
+
+const API_BASE =
+  "https://movie-shelf-api.sska9927.workers.dev";
+
+const STORAGE_KEY =
+  "movieShelfV3";
+
+let movies =
+  loadMovies();
+
+let currentQuery = "";
+let currentPage = 1;
+let hasNextPage = false;
+let searching = false;
+
+function loadMovies() {
+
+  try {
+
+    return JSON.parse(
+      localStorage.getItem(
+        STORAGE_KEY
+      )
+    ) || [];
+
+  } catch {
+
+    return [];
+
+  }
+
+}
+
+function saveMovies() {
+
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(movies)
+  );
+
+}
+
+function escapeHTML(text) {
+
+  if (!text) return "";
+
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+}
+
+function poster(url) {
+
+  return url ||
+    "https://via.placeholder.com/500x750?text=No+Poster";
+
+}
+
+function year(date) {
+
+  if (!date) return "";
+
+  return date.substring(0,4);
+
+}
+
+/* HOME */
+
+function showHome() {
+
+  const app =
+    document.getElementById("app");
+
+  app.innerHTML = `
+
+    <div id="searchArea">
+
+      <div class="search-box">
+
+        <input
+          id="movieSearch"
+          placeholder="映画を検索..."
+          onkeydown="
+            if(event.key==='Enter')
+            searchMovie()
+          "
+        >
+
+        <button
+          onclick="searchMovie()"
+        >
+          検索
+        </button>
+
+      </div>
+
+      <div
+        id="searchResults"
+      ></div>
+
+    </div>
+
+    <h2 class="section-title">
+      マイ映画棚
+    </h2>
+
+    <input
+      id="listSearch"
+      placeholder="登録作品を検索"
+      oninput="renderMovieList()"
+      style="
+        width:100%;
+        padding:12px;
+        border:0;
+        border-radius:10px;
+        margin-bottom:15px;
+      "
+    >
+
+    <div
+      id="movieList"
+    ></div>
+
+    <div class="tmdb-credit">
+      Movie data provided by TMDB.
+    </div>
+
+  `;
+
+  renderMovieList();
+
+}
+
+/* ADD BUTTON */
+
+function focusSearch() {
+
+  if (
+    !document.getElementById(
+      "movieSearch"
+    )
+  ) {
+    showHome();
+  }
+
+  setTimeout(() => {
+
+    const input =
+      document.getElementById(
+        "movieSearch"
+      );
+
+    if (!input) return;
+
+    input.focus();
+
+    input.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+
+  }, 100);
+
+}
+
+/* SEARCH */
+
+async function searchMovie() {
+
+  const input =
+    document.getElementById(
+      "movieSearch"
+    );
+
+  const query =
+    input.value.trim();
+
+  if (!query) return;
+
+  currentQuery = query;
+  currentPage = 1;
+  hasNextPage = false;
+
+  const results =
+    document.getElementById(
+      "searchResults"
+    );
+
+  results.innerHTML =
+    `<div class="loading">
+      🎬 映画を探しています…
+    </div>`;
+
+  await loadSearchPage(
+    query,
+    1,
+    false
+  );
+
+}
+
+/* LOAD SEARCH PAGE */
+
+async function loadSearchPage(
+  query,
+  page,
+  append
+) {
+
+  if (searching) return;
+
+  searching = true;
+
+  const results =
+    document.getElementById(
+      "searchResults"
+    );
+
+  try {
+
+    const response =
+      await fetch(
+        API_BASE +
+        "/search?q=" +
+        encodeURIComponent(query) +
+        "&page=" +
+        page
+      );
+
+    if (!response.ok) {
+      throw new Error(
+        "API error"
+      );
+    }
+
+    const data =
+      await response.json();
+
+    /*
+      新しいWorker形式
+      {
+        results: [],
+        page: 1,
+        hasNextPage: true
+      }
+    */
+
+    const moviesFound =
+      Array.isArray(data.results)
+        ? data.results
+        : [];
+
+    currentPage =
+      data.page || page;
+
+    hasNextPage =
+      Boolean(
+        data.hasNextPage
+      );
+
+    if (
+      moviesFound.length === 0 &&
+      !append
+    ) {
+
+      results.innerHTML =
+        `<div class="empty">
+          映画が見つかりませんでした。
+        </div>`;
+
+      searching = false;
+
+      return;
+    }
+
+    const html =
+      moviesFound
+        .map(movie => `
+
+          <div
+            class="result-item"
+            onclick='confirmAdd(
+              ${JSON.stringify(movie)
+                .replace(/'/g,"&#39;")}
+            )'
+          >
+
+            <img
+              src="${poster(
+                movie.posterPath
+              )}"
+            >
+
+            <div>
+
+              <div class="result-title">
+                ${escapeHTML(
+                  movie.title
+                )}
+              </div>
+
+              <div class="result-year">
+
+                ${year(
+                  movie.releaseDate
+                )}
+
+                ${
+                  movie.originalTitle
+                    ? " / " +
+                      escapeHTML(
+                        movie.originalTitle
+                      )
+                    : ""
+                }
+
+              </div>
+
+            </div>
+
+          </div>
+
+        `)
+        .join("");
+
+    if (append) {
+
+      const oldMore =
+        document.getElementById(
+          "loadMoreButton"
+        );
+
+      if (oldMore) {
+        oldMore.remove();
+      }
+
+      results.insertAdjacentHTML(
+        "beforeend",
+        html
+      );
+
+    } else {
+
+      results.innerHTML = `
+        <h3>
+          検索結果
+        </h3>
+
+        <div id="searchMovieResults">
+          ${html}
+        </div>
+      `;
+
+    }
+
+    if (hasNextPage) {
+
+      results.insertAdjacentHTML(
+        "beforeend",
+
+        `
+          <button
+            id="loadMoreButton"
+            class="load-more"
+            onclick="loadNextPage()"
+          >
+            次の20作品を表示
+          </button>
+        `
+      );
+
+    }
+
+  } catch (error) {
+
+    results.innerHTML = `
+      <div class="error">
+        映画情報の取得に失敗しました。<br>
+        もう一度試してください。
+      </div>
+    `;
+
+  }
+
+  searching = false;
+
+}
+
+/* NEXT 20 */
+
+async function loadNextPage() {
+
+  if (!currentQuery) return;
+
+  const button =
+    document.getElementById(
+      "loadMoreButton"
+    );
+
+  if (button) {
+
+    button.disabled = true;
+
+    button.textContent =
+      "読み込み中…";
+
+  }
+
+  await loadSearchPage(
+    currentQuery,
+    currentPage + 1,
+    true
+  );
+
+}
+
+/* ADD */
+
+function confirmAdd(movie) {
+
+  const duplicate =
+    movies.find(
+      m =>
+        m.tmdbId === movie.id
+    );
+
+  if (duplicate) {
+
+    const answer =
+      confirm(
+        "「" +
+        movie.title +
+        "」はすでに登録されています。\n\n" +
+        "それでも追加しますか？"
+      );
+
+    if (!answer) return;
+
+  }
+
+  addMovie(movie);
+
+}
+
+function addMovie(movie) {
+
+  const newMovie = {
+
+    localId:
+      Date.now().toString(),
+
+    tmdbId:
+      movie.id,
+
+    title:
+      movie.title || "",
+
+    originalTitle:
+      movie.originalTitle || "",
+
+    releaseDate:
+      movie.releaseDate || "",
+
+    overview:
+      movie.overview || "",
+
+    posterPath:
+      movie.posterPath || "",
+
+    watched:
+      false,
+
+    rating:
+      0,
+
+    note:
+      "",
+
+    createdAt:
+      new Date().toISOString()
+
+  };
+
+  movies.push(
+    newMovie
+  );
+
+  saveMovies();
+
+  alert(
+    "「" +
+    newMovie.title +
+    "」を映画棚に追加しました！"
+  );
+
+  showHome();
+
+}
+
+/* MOVIE LIST */
+
+function renderMovieList() {
+
+  const list =
+    document.getElementById(
+      "movieList"
+    );
+
+  if (!list) return;
+
+  const search =
+    (
+      document.getElementById(
+        "listSearch"
+      )?.value || ""
+    ).toLowerCase();
+
+  const filtered =
+    movies.filter(
+      movie =>
+        movie.title
+          .toLowerCase()
+          .includes(search) ||
+        movie.originalTitle
+          .toLowerCase()
+          .includes(search)
+    );
+
+  if (
+    filtered.length === 0
+  ) {
+
+    list.innerHTML =
+      `<div class="empty">
+        ${
+          movies.length === 0
+            ? "まだ映画が登録されていません。"
+            : "該当する映画がありません。"
+        }
+      </div>`;
+
+    return;
+
+  }
+
+  list.innerHTML = `
+
+    <div class="movie-grid">
+
+      ${filtered
+        .map(movie => `
+
+          <div
+            class="movie-card"
+            onclick="
+              showDetail(
+                '${movie.localId}'
+              )
+            "
+          >
+
+            <img
+              src="${poster(
+                movie.posterPath
+              )}"
+              alt="${escapeHTML(
+                movie.title
+              )}"
+            >
+
+            <div class="movie-info">
+
+              <div class="movie-title">
+                ${escapeHTML(
+                  movie.title
+                )}
+              </div>
+
+              <div class="movie-year">
+                ${year(
+                  movie.releaseDate
+                )}
+              </div>
+
+              <span
+                class="status ${
+                  movie.watched
+                    ? "watched"
+                    : "unwatched"
+                }"
+              >
+
+                ${
+                  movie.watched
+                    ? "✓ 視聴済み"
+                    : "未視聴"
+                }
+
+              </span>
+
+            </div>
+
+          </div>
+
+        `)
+        .join("")}
+
+    </div>
+
+  `;
+
+}
+
+/* DETAIL */
+
+function showDetail(
+  localId
+) {
+
+  const movie =
+    movies.find(
+      m =>
+        m.localId === localId
+    );
+
+  if (!movie) return;
+
+  const app =
+    document.getElementById(
+      "app"
+    );
+
+  app.innerHTML = `
+
+    <button
+      class="secondary back"
+      onclick="showHome()"
+    >
+      ← 映画一覧へ戻る
+    </button>
+
+    <div class="detail">
+
+      <div class="detail-top">
+
+        <img
+          class="detail-poster"
+          src="${poster(
+            movie.posterPath
+          )}"
+        >
+
+        <div>
+
+          <div class="detail-title">
+            ${escapeHTML(
+              movie.title
+            )}
+          </div>
+
+          <div class="detail-original">
+            ${escapeHTML(
+              movie.originalTitle
+            )}
+          </div>
+
+          <div>
+            ${
+              movie.releaseDate
+                ? "公開日：" +
+                  escapeHTML(
+                    movie.releaseDate
+                  )
+                : ""
+            }
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="detail-section">
+
+        <h3>
+          あらすじ
+        </h3>
+
+        <div class="detail-overview">
+
+          ${
+            movie.overview
+              ? escapeHTML(
+                  movie.overview
+                )
+              : "あらすじ情報なし"
+          }
+
+        </div>
+
+      </div>
+
+      <div class="detail-section">
+
+        <h3>
+          自分の記録
+        </h3>
+
+        <div class="field">
+
+          <label>
+            視聴状況
+          </label>
+
+          <select
+            id="watchedSelect"
+          >
+
+            <option
+              value="false"
+              ${
+                !movie.watched
+                  ? "selected"
+                  : ""
+              }
+            >
+              未視聴
+            </option>
+
+            <option
+              value="true"
+              ${
+                movie.watched
+                  ? "selected"
+                  : ""
+              }
+            >
+              視聴済み
+            </option>
+
+          </select>
+
+        </div>
+
+        <div class="field">
+
+          <label>
+            評価
+          </label>
+
+          <div
+            id="rating"
+            class="rating"
+          >
+
+            ${[1,2,3,4,5]
+              .map(n => `
+
+                <span
+                  class="${
+                    n <= movie.rating
+                      ? "active"
+                      : ""
+                  }"
+                  onclick="
+                    setRating(${n})
+                  "
+                >
+                  ★
+                </span>
+
+              `)
+              .join("")}
+
+          </div>
+
+        </div>
+
+        <div class="field">
+
+          <label>
+            メモ・感想
+          </label>
+
+          <textarea
+            id="movieNote"
+            placeholder="映画を観た感想などを入力"
+          >${escapeHTML(
+            movie.note
+          )}</textarea>
+
+        </div>
+
+        <div class="actions">
+
+          <button
+            class="primary"
+            onclick="
+              saveDetail(
+                '${movie.localId}'
+              )
+            "
+          >
+            保存
+          </button>
+
+          <button
+            class="danger"
+            onclick="
+              deleteMovie(
+                '${movie.localId}'
+              )
+            "
+          >
+            この作品を削除
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="tmdb-credit">
+      Movie data provided by TMDB.
+    </div>
+
+  `;
+
+  window.currentMovieId =
+    localId;
+
+}
+
+/* RATING */
+
+function setRating(
+  value
+) {
+
+  const movie =
+    movies.find(
+      m =>
+        m.localId ===
+        window.currentMovieId
+    );
+
+  if (!movie) return;
+
+  movie.rating =
+    value;
+
+  const rating =
+    document.getElementById(
+      "rating"
+    );
+
+  rating.innerHTML =
+    [1,2,3,4,5]
+      .map(n => `
+
+        <span
+          class="${
+            n <= value
+              ? "active"
+              : ""
+          }"
+          onclick="
+            setRating(${n})
+          "
+        >
+          ★
+        </span>
+
+      `)
+      .join("");
+
+}
+
+/* SAVE */
+
+function saveDetail(
+  localId
+) {
+
+  const movie =
+    movies.find(
+      m =>
+        m.localId ===
+        localId
+    );
+
+  if (!movie) return;
+
+  movie.watched =
+    document.getElementById(
+      "watchedSelect"
+    ).value === "true";
+
+  movie.note =
+    document.getElementById(
+      "movieNote"
+    ).value;
+
+  saveMovies();
+
+  alert(
+    "保存しました！"
+  );
+
+  showDetail(
+    localId
+  );
+
+}
+
+/* DELETE */
+
+function deleteMovie(
+  localId
+) {
+
+  const movie =
+    movies.find(
+      m =>
+        m.localId ===
+        localId
+    );
+
+  if (!movie) return;
+
+  const answer =
+    confirm(
+      "「" +
+      movie.title +
+      "」を削除しますか？\n\n" +
+      "この操作は取り消せません。"
+    );
+
+  if (!answer) return;
+
+  movies =
+    movies.filter(
+      m =>
+        m.localId !==
+        localId
+    );
+
+  saveMovies();
+
+  showHome();
+
+}
+
+/* START */
+
+showHome();
+
+</script>
+
+</body>
+</html>
