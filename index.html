@@ -20,7 +20,7 @@ header {
 }
 
 .container {
-    padding: 0 20px;
+    padding: 0 20px 100px;
 }
 
 .search {
@@ -45,6 +45,11 @@ header {
     border: none;
     padding: 10px 16px;
     border-radius: 20px;
+}
+
+.tabs button.active {
+    background: white;
+    color: black;
 }
 
 .movie-grid {
@@ -94,6 +99,13 @@ header {
     background: white;
     color: black;
     font-size: 30px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.4);
+}
+
+.empty {
+    color: #777;
+    text-align: center;
+    padding: 40px 0;
 }
 </style>
 </head>
@@ -105,40 +117,180 @@ header {
 <div class="container">
 
 <input
+    id="search"
     class="search"
     type="search"
     placeholder="映画を検索"
 >
 
 <div class="tabs">
-    <button>すべて</button>
-    <button>未視聴</button>
-    <button>視聴済み</button>
+    <button class="active" onclick="setFilter('all', this)">すべて</button>
+    <button onclick="setFilter('unwatched', this)">未視聴</button>
+    <button onclick="setFilter('watched', this)">視聴済み</button>
 </div>
 
-<div class="movie-grid">
+<div id="movieGrid" class="movie-grid"></div>
 
-    <div class="movie">
-        <div class="poster">🎬</div>
-        <div class="info">
-            <div class="title">インターステラー</div>
-            <div class="status">🔴 未視聴</div>
+</div>
+
+<button class="add" onclick="addMovie()">＋</button>
+
+<script>
+
+let movies = JSON.parse(localStorage.getItem("movies") || "[]");
+let filter = "all";
+
+function saveMovies() {
+    localStorage.setItem("movies", JSON.stringify(movies));
+}
+
+function addMovie() {
+
+    const title = prompt("映画のタイトルを入力してください");
+
+    if (!title || !title.trim()) {
+        return;
+    }
+
+    const cleanTitle = title.trim();
+
+    const exists = movies.some(movie =>
+        movie.title.toLowerCase() === cleanTitle.toLowerCase()
+    );
+
+    if (exists) {
+        alert("⚠️ この映画はすでに登録されています");
+        return;
+    }
+
+    movies.push({
+        title: cleanTitle,
+        watched: false,
+        note: ""
+    });
+
+    saveMovies();
+    render();
+}
+
+function setFilter(type, button) {
+
+    filter = type;
+
+    document.querySelectorAll(".tabs button")
+        .forEach(btn => btn.classList.remove("active"));
+
+    button.classList.add("active");
+
+    render();
+}
+
+function render() {
+
+    const grid = document.getElementById("movieGrid");
+    const search = document.getElementById("search").value.toLowerCase();
+
+    let list = movies.filter(movie => {
+
+        const matchesSearch =
+            movie.title.toLowerCase().includes(search);
+
+        const matchesFilter =
+            filter === "all" ||
+            (filter === "watched" && movie.watched) ||
+            (filter === "unwatched" && !movie.watched);
+
+        return matchesSearch && matchesFilter;
+    });
+
+    if (list.length === 0) {
+
+        grid.innerHTML =
+            '<div class="empty">映画がありません</div>';
+
+        return;
+    }
+
+    grid.innerHTML = list.map((movie, index) => `
+
+        <div class="movie" onclick="movieMenu(${movies.indexOf(movie)})">
+
+            <div class="poster">🎬</div>
+
+            <div class="info">
+
+                <div class="title">
+                    ${escapeHTML(movie.title)}
+                </div>
+
+                <div class="status">
+                    ${movie.watched ? "🟢 視聴済み" : "🔴 未視聴"}
+                </div>
+
+            </div>
+
         </div>
-    </div>
 
-    <div class="movie">
-        <div class="poster">🎬</div>
-        <div class="info">
-            <div class="title">セブン</div>
-            <div class="status">🟢 視聴済み</div>
-        </div>
-    </div>
+    `).join("");
+}
 
-</div>
+function movieMenu(index) {
 
-</div>
+    const movie = movies[index];
 
-<button class="add">＋</button>
+    const action = prompt(
+        movie.title +
+        "\n\n1：視聴済みにする\n2：メモを書く\n3：削除\n\n番号を入力してください"
+    );
+
+    if (action === "1") {
+
+        movie.watched = !movie.watched;
+
+        saveMovies();
+        render();
+
+    } else if (action === "2") {
+
+        const note = prompt(
+            "メモ・感想を入力してください",
+            movie.note || ""
+        );
+
+        if (note !== null) {
+            movie.note = note;
+            saveMovies();
+        }
+
+    } else if (action === "3") {
+
+        if (confirm("「" + movie.title + "」を削除しますか？")) {
+
+            movies.splice(index, 1);
+
+            saveMovies();
+            render();
+        }
+    }
+}
+
+function escapeHTML(text) {
+
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+document
+    .getElementById("search")
+    .addEventListener("input", render);
+
+render();
+
+</script>
 
 </body>
 </html>
