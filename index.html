@@ -129,6 +129,30 @@ button{
   font-size:20px;
 }
 
+/* SHELF TABS */
+
+.shelf-tabs{
+  display:flex;
+  gap:7px;
+  margin:0 0 12px;
+}
+
+.shelf-tab{
+  flex:1;
+  padding:11px 5px;
+  border-radius:10px;
+  background:rgba(255,255,255,.1);
+  color:#d8cec4;
+  font-weight:800;
+}
+
+.shelf-tab.active{
+  background:linear-gradient(145deg,#f1d6a5,#b78a50);
+  color:#241a12;
+}
+
+/* MOVIE GRID */
+
 .movie-grid{
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
@@ -145,6 +169,7 @@ button{
     0 10px 18px rgba(0,0,0,.55),
     inset 0 0 0 1px rgba(255,255,255,.08),
     inset 0 0 0 3px rgba(0,0,0,.7);
+  transition:transform .15s ease;
 }
 
 .movie-card:active{
@@ -198,6 +223,8 @@ button{
   color:#d8cec4;
 }
 
+/* LOAD MORE */
+
 .load-more{
   display:block;
   width:100%;
@@ -207,6 +234,8 @@ button{
 .load-more:disabled{
   opacity:.6;
 }
+
+/* DETAIL */
 
 .detail{
   background:linear-gradient(145deg,#302621,#171210);
@@ -344,6 +373,18 @@ button{
   margin-bottom:10px;
 }
 
+/* COUNT */
+
+.shelf-count{
+  text-align:center;
+  color:#bcae9f;
+  font-size:12px;
+  margin-top:2px;
+  margin-bottom:3px;
+}
+
+/* MOBILE */
+
 @media(max-width:650px){
 
   .container{
@@ -386,6 +427,10 @@ button{
   .detail-section{
     padding:15px;
   }
+
+  .shelf-tab{
+    font-size:13px;
+  }
 }
 </style>
 </head>
@@ -393,6 +438,7 @@ button{
 <body>
 
 <header>
+
   <div class="header-inner">
 
     <h1>🎬 Movie Shelf</h1>
@@ -405,6 +451,7 @@ button{
     </button>
 
   </div>
+
 </header>
 
 <main
@@ -420,21 +467,41 @@ const API_BASE =
 const STORAGE_KEY =
   "movieShelfV4";
 
-let movies = loadMovies();
+let movies =
+  loadMovies();
 
-let currentQuery = "";
-let currentPage = 1;
-let hasNextPage = false;
-let searching = false;
+let currentQuery =
+  "";
+
+let currentPage =
+  1;
+
+let hasNextPage =
+  false;
+
+let searching =
+  false;
+
+let currentShelfTab =
+  "all";
+
+
+/* STORAGE */
 
 function loadMovies(){
 
   try{
+
     return JSON.parse(
-      localStorage.getItem(STORAGE_KEY)
+      localStorage.getItem(
+        STORAGE_KEY
+      )
     ) || [];
+
   }catch{
+
     return [];
+
   }
 
 }
@@ -448,6 +515,9 @@ function saveMovies(){
 
 }
 
+
+/* SECURITY */
+
 function escapeHTML(text){
 
   if(!text) return "";
@@ -460,6 +530,9 @@ function escapeHTML(text){
     .replace(/'/g,"&#039;");
 
 }
+
+
+/* HELPERS */
 
 function poster(url){
 
@@ -476,11 +549,14 @@ function year(date){
 
 }
 
+
 /* HOME */
 
 function showHome(){
 
-  document.getElementById("app").innerHTML = `
+  document.getElementById(
+    "app"
+  ).innerHTML = `
 
     <div id="searchArea">
 
@@ -507,38 +583,99 @@ function showHome(){
 
     </div>
 
+
     <h2 class="section-title">
       マイ映画棚
     </h2>
+
+
+    <div class="shelf-tabs">
+
+      <button
+        id="tabAll"
+        class="shelf-tab active"
+        onclick="
+          changeShelfTab('all')
+        "
+      >
+        すべて
+      </button>
+
+      <button
+        id="tabUnwatched"
+        class="shelf-tab"
+        onclick="
+          changeShelfTab('unwatched')
+        "
+      >
+        未視聴
+      </button>
+
+      <button
+        id="tabWatched"
+        class="shelf-tab"
+        onclick="
+          changeShelfTab('watched')
+        "
+      >
+        視聴済み
+      </button>
+
+    </div>
+
+
+    <div
+      id="shelfCount"
+      class="shelf-count"
+    ></div>
+
 
     <input
       id="listSearch"
       class="list-search"
       placeholder="登録作品を検索"
-      oninput="renderMovieList()"
+      oninput="
+        renderMovieList()
+      "
     >
 
+
     <div id="movieList"></div>
+
 
     <div class="tmdb-credit">
       Movie data provided by TMDB.
     </div>
+
   `;
+
+  updateShelfTabs();
 
   renderMovieList();
 
 }
 
+
+/* ADD BUTTON */
+
 function focusSearch(){
 
-  if(!document.getElementById("movieSearch")){
+  if(
+    !document.getElementById(
+      "movieSearch"
+    )
+  ){
+
     showHome();
+
   }
 
   setTimeout(()=>{
 
     const input =
-      document.getElementById("movieSearch");
+      document.getElementById(
+        "movieSearch"
+      );
 
     if(!input) return;
 
@@ -553,24 +690,84 @@ function focusSearch(){
 
 }
 
+
+/* SHELF TAB */
+
+function changeShelfTab(tab){
+
+  currentShelfTab =
+    tab;
+
+  updateShelfTabs();
+
+  renderMovieList();
+
+}
+
+function updateShelfTabs(){
+
+  const all =
+    document.getElementById(
+      "tabAll"
+    );
+
+  const unwatched =
+    document.getElementById(
+      "tabUnwatched"
+    );
+
+  const watched =
+    document.getElementById(
+      "tabWatched"
+    );
+
+  if(!all) return;
+
+  all.classList.toggle(
+    "active",
+    currentShelfTab === "all"
+  );
+
+  unwatched.classList.toggle(
+    "active",
+    currentShelfTab === "unwatched"
+  );
+
+  watched.classList.toggle(
+    "active",
+    currentShelfTab === "watched"
+  );
+
+}
+
+
 /* SEARCH */
 
 async function searchMovie(){
 
   const input =
-    document.getElementById("movieSearch");
+    document.getElementById(
+      "movieSearch"
+    );
 
   const query =
     input.value.trim();
 
   if(!query) return;
 
-  currentQuery = query;
-  currentPage = 1;
-  hasNextPage = false;
+  currentQuery =
+    query;
+
+  currentPage =
+    1;
+
+  hasNextPage =
+    false;
 
   const results =
-    document.getElementById("searchResults");
+    document.getElementById(
+      "searchResults"
+    );
 
   results.innerHTML =
     `<div class="loading">
@@ -585,6 +782,7 @@ async function searchMovie(){
 
 }
 
+
 /* SEARCH PAGE */
 
 async function loadSearchPage(
@@ -595,10 +793,13 @@ async function loadSearchPage(
 
   if(searching) return;
 
-  searching = true;
+  searching =
+    true;
 
   const results =
-    document.getElementById("searchResults");
+    document.getElementById(
+      "searchResults"
+    );
 
   try{
 
@@ -606,23 +807,29 @@ async function loadSearchPage(
       await fetch(
         API_BASE +
         "/search?q=" +
-        encodeURIComponent(query) +
+        encodeURIComponent(
+          query
+        ) +
         "&page=" +
         page
       );
 
     if(!response.ok){
+
       throw new Error(
         "API error " +
         response.status
       );
+
     }
 
     const data =
       await response.json();
 
     const found =
-      Array.isArray(data.results)
+      Array.isArray(
+        data.results
+      )
         ? data.results
         : [];
 
@@ -630,7 +837,10 @@ async function loadSearchPage(
       data.page || page;
 
     hasNextPage =
-      Boolean(data.hasNextPage);
+      Boolean(
+        data.hasNextPage
+      );
+
 
     if(
       found.length === 0 &&
@@ -643,38 +853,54 @@ async function loadSearchPage(
           該当する映画がありませんでした。
         </div>`;
 
-      searching = false;
+      searching =
+        false;
+
       return;
+
     }
+
 
     const html =
       found.map(movie => {
 
         const safeMovie =
           encodeURIComponent(
-            JSON.stringify(movie)
+            JSON.stringify(
+              movie
+            )
           );
 
         return `
 
           <div
             class="result-item"
-            onclick="confirmAddEncoded('${safeMovie}')"
+            onclick="
+              confirmAddEncoded(
+                '${safeMovie}'
+              )
+            "
           >
 
             <img
-              src="${poster(movie.posterPath)}"
+              src="${poster(
+                movie.posterPath
+              )}"
             >
 
             <div>
 
               <div class="result-title">
-                ${escapeHTML(movie.title)}
+                ${escapeHTML(
+                  movie.title
+                )}
               </div>
 
               <div class="result-year">
 
-                ${year(movie.releaseDate)}
+                ${year(
+                  movie.releaseDate
+                )}
 
                 ${
                   movie.originalTitle
@@ -695,14 +921,21 @@ async function loadSearchPage(
 
       }).join("");
 
+
     if(!append){
 
       results.innerHTML = `
-        <h3>検索結果</h3>
 
-        <div id="searchMovieResults">
+        <h3>
+          検索結果
+        </h3>
+
+        <div
+          id="searchMovieResults"
+        >
           ${html}
         </div>
+
       `;
 
     }else{
@@ -713,13 +946,16 @@ async function loadSearchPage(
         );
 
       if(list){
+
         list.insertAdjacentHTML(
           "beforeend",
           html
         );
+
       }
 
     }
+
 
     const oldButton =
       document.getElementById(
@@ -727,8 +963,11 @@ async function loadSearchPage(
       );
 
     if(oldButton){
+
       oldButton.remove();
+
     }
+
 
     if(hasNextPage){
 
@@ -736,6 +975,7 @@ async function loadSearchPage(
         "beforeend",
 
         `
+
         <button
           id="loadMoreButton"
           class="load-more"
@@ -743,27 +983,38 @@ async function loadSearchPage(
         >
           次の20作品を表示
         </button>
+
         `
+
       );
 
     }
 
   }catch(error){
 
-    console.error(error);
+    console.error(
+      error
+    );
 
     results.innerHTML = `
+
       <div class="error">
+
         検索に失敗しました。<br>
+
         もう一度検索してください。
+
       </div>
+
     `;
 
   }
 
-  searching = false;
+  searching =
+    false;
 
 }
+
 
 /* NEXT 20 */
 
@@ -776,7 +1027,8 @@ async function loadNextPage(){
 
   if(button){
 
-    button.disabled = true;
+    button.disabled =
+      true;
 
     button.textContent =
       "読み込み中…";
@@ -791,22 +1043,31 @@ async function loadNextPage(){
 
 }
 
+
 /* ADD */
 
-function confirmAddEncoded(encoded){
+function confirmAddEncoded(
+  encoded
+){
 
   try{
 
     const movie =
       JSON.parse(
-        decodeURIComponent(encoded)
+        decodeURIComponent(
+          encoded
+        )
       );
 
-    confirmAdd(movie);
+    confirmAdd(
+      movie
+    );
 
   }catch(error){
 
-    console.error(error);
+    console.error(
+      error
+    );
 
     alert(
       "作品情報の読み込みに失敗しました。"
@@ -816,30 +1077,38 @@ function confirmAddEncoded(encoded){
 
 }
 
+
 function confirmAdd(movie){
 
   const duplicate =
     movies.find(
-      m => m.tmdbId === movie.id
+      m =>
+        m.tmdbId ===
+        movie.id
     );
 
   if(duplicate){
 
     const answer =
       confirm(
+
         "「" +
         movie.title +
         "」はすでに登録されています。\n\n" +
         "それでも追加しますか？"
+
       );
 
     if(!answer) return;
 
   }
 
-  addMovie(movie);
+  addMovie(
+    movie
+  );
 
 }
+
 
 function addMovie(movie){
 
@@ -852,28 +1121,37 @@ function addMovie(movie){
       movie.id,
 
     title:
-      movie.title || "",
+      movie.title ||
+      "",
 
     originalTitle:
-      movie.originalTitle || "",
+      movie.originalTitle ||
+      "",
 
     releaseDate:
-      movie.releaseDate || "",
+      movie.releaseDate ||
+      "",
 
     overview:
-      movie.overview || "",
+      movie.overview ||
+      "",
 
     posterPath:
-      movie.posterPath || "",
+      movie.posterPath ||
+      "",
 
-    watched:false,
+    watched:
+      false,
 
-    rating:0,
+    rating:
+      0,
 
-    note:"",
+    note:
+      "",
 
     createdAt:
-      new Date().toISOString()
+      new Date()
+        .toISOString()
 
   });
 
@@ -889,7 +1167,8 @@ function addMovie(movie){
 
 }
 
-/* LIST */
+
+/* MOVIE LIST */
 
 function renderMovieList(){
 
@@ -900,36 +1179,139 @@ function renderMovieList(){
 
   if(!list) return;
 
+
   const search =
     (
       document.getElementById(
         "listSearch"
-      )?.value || ""
+      )?.value ||
+      ""
     ).toLowerCase();
 
+
   const filtered =
-    movies.filter(movie =>
-      movie.title
-        .toLowerCase()
-        .includes(search) ||
-      movie.originalTitle
-        .toLowerCase()
-        .includes(search)
+    movies.filter(movie => {
+
+      const matchesSearch =
+        movie.title
+          .toLowerCase()
+          .includes(
+            search
+          ) ||
+
+        movie.originalTitle
+          .toLowerCase()
+          .includes(
+            search
+          );
+
+
+      if(!matchesSearch){
+
+        return false;
+
+      }
+
+
+      if(
+        currentShelfTab ===
+        "watched"
+      ){
+
+        return movie.watched ===
+          true;
+
+      }
+
+
+      if(
+        currentShelfTab ===
+        "unwatched"
+      ){
+
+        return movie.watched !==
+          true;
+
+      }
+
+
+      return true;
+
+    });
+
+
+  /* COUNT */
+
+  const count =
+    document.getElementById(
+      "shelfCount"
     );
 
-  if(filtered.length === 0){
+  if(count){
+
+    count.textContent =
+      `${filtered.length}作品`;
+
+  }
+
+
+  /* EMPTY */
+
+  if(
+    filtered.length ===
+    0
+  ){
+
+    let message =
+      "該当する映画がありません。";
+
+
+    if(
+      currentShelfTab ===
+        "all" &&
+      movies.length ===
+        0
+    ){
+
+      message =
+        "まだ映画が登録されていません。";
+
+    }
+
+
+    if(
+      currentShelfTab ===
+      "watched"
+    ){
+
+      message =
+        "視聴済みの映画はまだありません。";
+
+    }
+
+
+    if(
+      currentShelfTab ===
+      "unwatched"
+    ){
+
+      message =
+        "未視聴の映画はありません。";
+
+    }
+
 
     list.innerHTML =
       `<div class="empty">
-        ${
-          movies.length === 0
-            ? "まだ映画が登録されていません。"
-            : "該当する映画がありません。"
-        }
+        ${message}
       </div>`;
 
     return;
+
   }
+
+
+  /* GRID */
 
   list.innerHTML = `
 
@@ -940,22 +1322,30 @@ function renderMovieList(){
         <div
           class="movie-card"
           onclick="
-            showDetail('${movie.localId}')
+            showDetail(
+              '${movie.localId}'
+            )
           "
         >
 
           <img
-            src="${poster(movie.posterPath)}"
+            src="${poster(
+              movie.posterPath
+            )}"
           >
 
           <div class="movie-info">
 
             <div class="movie-title">
-              ${escapeHTML(movie.title)}
+              ${escapeHTML(
+                movie.title
+              )}
             </div>
 
             <div class="movie-year">
-              ${year(movie.releaseDate)}
+              ${year(
+                movie.releaseDate
+              )}
             </div>
 
             <span
@@ -979,25 +1369,35 @@ function renderMovieList(){
       `).join("")}
 
     </div>
+
   `;
 
 }
 
+
 /* DETAIL */
 
-function showDetail(localId){
+function showDetail(
+  localId
+){
 
   const movie =
     movies.find(
-      m => m.localId === localId
+      m =>
+        m.localId ===
+        localId
     );
 
   if(!movie) return;
 
+
   window.currentMovieId =
     localId;
 
-  document.getElementById("app").innerHTML = `
+
+  document.getElementById(
+    "app"
+  ).innerHTML = `
 
     <button
       class="secondary back"
@@ -1006,72 +1406,113 @@ function showDetail(localId){
       ← 映画一覧へ戻る
     </button>
 
+
     <div class="detail">
+
 
       <div class="detail-top">
 
         <img
           class="detail-poster"
-          src="${poster(movie.posterPath)}"
+          src="${poster(
+            movie.posterPath
+          )}"
         >
+
 
         <div>
 
           <div class="detail-title">
-            ${escapeHTML(movie.title)}
+            ${escapeHTML(
+              movie.title
+            )}
           </div>
+
 
           <div class="detail-original">
-            ${escapeHTML(movie.originalTitle)}
+            ${escapeHTML(
+              movie.originalTitle
+            )}
           </div>
 
+
           <div>
+
             ${
               movie.releaseDate
                 ? "公開日：" +
-                  escapeHTML(movie.releaseDate)
+                  escapeHTML(
+                    movie.releaseDate
+                  )
                 : ""
             }
+
           </div>
 
         </div>
 
       </div>
 
+
       <div class="detail-section">
 
-        <h3>あらすじ</h3>
+        <h3>
+          あらすじ
+        </h3>
+
 
         <div class="detail-overview">
+
           ${
             movie.overview
-              ? escapeHTML(movie.overview)
+              ? escapeHTML(
+                  movie.overview
+                )
               : "あらすじ情報なし"
           }
+
         </div>
 
       </div>
 
+
       <div class="detail-section">
 
-        <h3>自分の記録</h3>
+        <h3>
+          自分の記録
+        </h3>
+
 
         <div class="field">
 
-          <label>視聴状況</label>
+          <label>
+            視聴状況
+          </label>
 
-          <select id="watchedSelect">
+
+          <select
+            id="watchedSelect"
+          >
 
             <option
               value="false"
-              ${!movie.watched ? "selected" : ""}
+              ${
+                !movie.watched
+                  ? "selected"
+                  : ""
+              }
             >
               未視聴
             </option>
 
+
             <option
               value="true"
-              ${movie.watched ? "selected" : ""}
+              ${
+                movie.watched
+                  ? "selected"
+                  : ""
+              }
             >
               視聴済み
             </option>
@@ -1080,53 +1521,84 @@ function showDetail(localId){
 
         </div>
 
+
         <div class="field">
 
-          <label>評価</label>
+          <label>
+            評価
+          </label>
 
-          <div id="rating" class="rating">
 
-            ${[1,2,3,4,5].map(n => `
+          <div
+            id="rating"
+            class="rating"
+          >
 
-              <span
-                class="${n <= movie.rating ? "active" : ""}"
-                onclick="setRating(${n})"
-              >
-                ★
-              </span>
+            ${
+              [1,2,3,4,5]
+                .map(
+                  n => `
 
-            `).join("")}
+                    <span
+                      class="${
+                        n <= movie.rating
+                          ? "active"
+                          : ""
+                      }"
+                      onclick="
+                        setRating(${n})
+                      "
+                    >
+                      ★
+                    </span>
+
+                  `
+                )
+                .join("")
+            }
 
           </div>
 
         </div>
 
+
         <div class="field">
 
-          <label>メモ・感想</label>
+          <label>
+            メモ・感想
+          </label>
+
 
           <textarea
             id="movieNote"
             placeholder="映画を観た感想などを入力"
-          >${escapeHTML(movie.note)}</textarea>
+          >${escapeHTML(
+            movie.note
+          )}</textarea>
 
         </div>
+
 
         <div class="actions">
 
           <button
             class="primary"
             onclick="
-              saveDetail('${movie.localId}')
+              saveDetail(
+                '${movie.localId}'
+              )
             "
           >
             保存
           </button>
 
+
           <button
             class="danger"
             onclick="
-              deleteMovie('${movie.localId}')
+              deleteMovie(
+                '${movie.localId}'
+              )
             "
           >
             この作品を削除
@@ -1137,13 +1609,17 @@ function showDetail(localId){
       </div>
 
     </div>
+
   `;
 
 }
 
+
 /* RATING */
 
-function setRating(value){
+function setRating(
+  value
+){
 
   const movie =
     movies.find(
@@ -1154,87 +1630,133 @@ function setRating(value){
 
   if(!movie) return;
 
-  movie.rating = value;
+
+  movie.rating =
+    value;
+
 
   const rating =
     document.getElementById(
       "rating"
     );
 
+  if(!rating) return;
+
+
   rating.innerHTML =
-    [1,2,3,4,5].map(n => `
+    [1,2,3,4,5]
+      .map(
+        n => `
 
-      <span
-        class="${n <= value ? "active" : ""}"
-        onclick="setRating(${n})"
-      >
-        ★
-      </span>
+          <span
+            class="${
+              n <= value
+                ? "active"
+                : ""
+            }"
+            onclick="
+              setRating(${n})
+            "
+          >
+            ★
+          </span>
 
-    `).join("");
+        `
+      )
+      .join("");
 
 }
 
+
 /* SAVE */
 
-function saveDetail(localId){
+function saveDetail(
+  localId
+){
 
   const movie =
     movies.find(
-      m => m.localId === localId
+      m =>
+        m.localId ===
+        localId
     );
 
   if(!movie) return;
 
+
   movie.watched =
     document.getElementById(
       "watchedSelect"
-    ).value === "true";
+    ).value ===
+    "true";
+
 
   movie.note =
     document.getElementById(
       "movieNote"
     ).value;
 
+
   saveMovies();
 
-  alert("保存しました！");
 
-  showDetail(localId);
+  alert(
+    "保存しました！"
+  );
+
+
+  showDetail(
+    localId
+  );
 
 }
 
+
 /* DELETE */
 
-function deleteMovie(localId){
+function deleteMovie(
+  localId
+){
 
   const movie =
     movies.find(
-      m => m.localId === localId
+      m =>
+        m.localId ===
+        localId
     );
 
   if(!movie) return;
 
+
   const answer =
     confirm(
+
       "「" +
       movie.title +
       "」を削除しますか？\n\n" +
       "この操作は取り消せません。"
+
     );
+
 
   if(!answer) return;
 
+
   movies =
     movies.filter(
-      m => m.localId !== localId
+      m =>
+        m.localId !==
+        localId
     );
 
+
   saveMovies();
+
 
   showHome();
 
 }
+
 
 /* START */
 
